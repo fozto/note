@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ruang. — Catatan Pribadi</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+
+:root {
+    --bg: #eeece6;
+    --bg-2: #e8e5dd;
+
+    --card: rgba(250, 249, 245, .94);
+    --card-solid: #faf9f5;
+    --card-soft: #ebe9e2;
+    --card-hover: #fdfcf9;
+
+    --text: #080838;
+    --text-soft: #36195b;
+
+    --muted: #777884;
+    --muted-2: #a09fa8;
+
+    --border: rgba(8, 8, 56, .11);
+    --border-dark: rgba(8, 8, 56, .18);
+
+    --primary: #36195b;
+    --primary-hover: #512575;
+
+    --secondary: #133155;
+    --secondary-hover: #234a6c;
+
+    --green: #234d1b;
+    --green-hover: #326b27;
+
+    --danger: #9b625c;
+    --danger-bg: #f8eeee;
+
+    --input: rgba(255, 254, 250, .9);
+
+    --shadow:
+        0 30px 80px rgba(8, 8, 56, .08),
+        0 8px 25px rgba(8, 8, 56, .035);
+
+    --shadow-hover:
+        0 25px 60px rgba(8, 8, 56, .12),
+        0 8px 20px rgba(8, 8, 56, .06);
+
+    --radius: 22px;
+}
+:root {
+    --note-font-size: 25px;
+    --arabic-font-size: 25px;
+
+    /* Ukuran judul catatan */
+    --note-title-size: 25px;
+}
+:root {
+    --note-title-input-size: 30px;
+}
+#judul {
+    font-size: var(--note-title-input-size);
+    font-family: 'Playfair Display', Georgia, serif;
+    line-height: 1.5;
+}
+/* Judul catatan berbahasa Arab */
+#judul.arabic {
+    font-family: 'Amiri', serif !important;
+    direction: rtl;
+    text-align: right;
+    font-size: var(--arabic-font-size);
+    line-height: 1.8;
+}
+
+/* Placeholder judul tetap normal */
+#judul::placeholder {
+    font-family: 'DM Sans', sans-serif;
+    direction: ltr;
+    text-align: left;
+    font-size: 13px;
+}
+
+/* Tampilan catatan berbahasa Arab */
+.note-title.arabic,
+.note-preview.arabic {
+    font-family: 'Amiri', serif !important;
+    direction: rtl;
+    text-align: right;
+    line-height: 2;
+}
+
+/* Ukuran font judul Arab */
+.note-title.arabic {
+    font-size: var(--arabic-font-size);
+}
+
+/* Ukuran font isi Arab */
+.note-preview.arabic {
+    font-size: var(--note-font-size);
+}
+
+[data-theme="dark"] {
+    --bg: #07072e;
+    --bg-2: #0a0b36;
+
+    --card: rgba(13, 18, 61, .94);
+    --card-solid: #0d123d;
+    --card-soft: #141b4b;
+    --card-hover: #111743;
+
+    --text: #f0f0f5;
+    --text-soft: #d8cde4;
+
+    --muted: #aaa9b8;
+    --muted-2: #79798e;
+
+    --border: rgba(230, 230, 255, .09);
+    --border-dark: rgba(230, 230, 255, .16);
+
+    --primary: #61308b;
+    --primary-hover: #7740a4;
+
+    --secondary: #254d70;
+    --secondary-hover: #31628b;
+
+    --green: #214b1a;
+    --green-hover: #326b27;
+
+    --danger: #d08b82;
+    --danger-bg: rgba(155, 98, 92, .12);
+
+    --input: rgba(7, 8, 43, .6);
+
+    --shadow:
+        0 30px 80px rgba(0, 0, 0, .4),
+        0 8px 25px rgba(0, 0, 0, .2);
+
+    --shadow-hover:
+        0 30px 70px rgba(0, 0, 0, .5),
+        0 8px 25px rgba(0, 0, 0, .25);
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 30px 15px;
+
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            rgba(120, 90, 150, .13),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 0% 100%,
+            rgba(50, 80, 130, .08),
+            transparent 30%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    font-family: 'DM Sans', sans-serif;
+
+    transition:
+        background .4s ease,
+        color .4s ease;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 95, 120, .25);
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 95, 120, .4);
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.container {
+    position: relative;
+
+    width: 100%;
+    max-width: 520px;
+
+    margin: 0 auto;
+    padding: 30px;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    box-shadow: var(--shadow);
+
+    overflow: hidden;
+
+    animation: containerAppear .7s cubic-bezier(.22, 1, .36, 1);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    transition:
+        background .4s ease,
+        border-color .4s ease,
+        box-shadow .4s ease;
+}
+
+
+/* decorative glow */
+
+.container::before {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    top: -120px;
+    right: -80px;
+
+    border-radius: 50%;
+
+    background: rgba(81, 37, 117, .09);
+
+    filter: blur(5px);
+
+    pointer-events: none;
+}
+
+.container::after {
+    content: "";
+
+    position: absolute;
+
+    width: 140px;
+    height: 140px;
+
+    bottom: -110px;
+    left: -80px;
+
+    border-radius: 50%;
+
+    background: rgba(19, 49, 85, .07);
+
+    filter: blur(8px);
+
+    pointer-events: none;
+}
+
+@keyframes containerAppear {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-bottom: 22px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 43px;
+    height: 43px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            var(--text),
+            var(--primary)
+        );
+
+    color: #f8f5ee;
+
+    font-size: 21px;
+
+    box-shadow:
+        0 8px 22px rgba(54, 25, 91, .18);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+}
+
+.logo:hover {
+    transform: rotate(-5deg) scale(1.06);
+
+    box-shadow:
+        0 10px 28px rgba(54, 25, 91, .25);
+}
+
+.brand-name {
+    font-size: 23px;
+    font-weight: 700;
+
+    letter-spacing: -1.2px;
+
+    line-height: 1;
+}
+
+.brand-sub {
+    margin-top: 5px;
+
+    color: var(--muted);
+
+    font-size: 8px;
+    font-weight: 600;
+
+    letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   HEADER ACTIONS
+========================================================= */
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lock,
+.theme-button {
+    width: 35px;
+    height: 35px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--border);
+
+    border-radius: 50%;
+
+    background: transparent;
+
+    color: var(--muted);
+
+    transition:
+        background .2s ease,
+        color .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+.lock {
+    font-size: 17px;
+}
+
+.theme-button {
+    margin: 0;
+    padding: 0;
+
+    font-size: 15px;
+}
+
+.lock:hover,
+.theme-button:hover {
+    background: var(--card-soft);
+
+    color: var(--text);
+
+    border-color: var(--border-dark);
+
+    transform: translateY(-2px);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   TYPOGRAPHY
+========================================================= */
+
+.eyebrow {
+    margin-bottom: 13px;
+
+    color: var(--muted);
+
+    font-size: 9px;
+    font-weight: 600;
+
+    letter-spacing: 2.3px;
+
+    text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+
+    font-weight: 500;
+}
+
+h1 {
+    margin: 0 0 14px;
+
+    font-size: 38px;
+
+    line-height: 1.18;
+
+    letter-spacing: -1.3px;
+}
+
+.description {
+    max-width: 390px;
+
+    margin: 0;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    line-height: 1.9;
+}
+
+
+/* =========================================================
+   LOGIN / INTRO
+========================================================= */
+
+.intro {
+    position: relative;
+
+    padding: 45px 0 27px;
+}
+
+.intro::after {
+    content: "✦";
+
+    position: absolute;
+
+    top: 39px;
+    right: 5px;
+
+    color: var(--primary);
+
+    opacity: .35;
+
+    font-size: 17px;
+
+    animation: floatStar 3s ease-in-out infinite;
+}
+
+@keyframes floatStar {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-5px) rotate(8deg);
+    }
+}
+
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+label {
+    display: block;
+
+    margin: 20px 0 8px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+    font-weight: 600;
+
+    letter-spacing: .4px;
+}
+
+
+/* =========================================================
+   INPUT / TEXTAREA
+========================================================= */
+
+input,
+textarea {
+    width: 100%;
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    background: var(--input);
+
+    color: var(--text);
+
+    padding: 13px 14px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    transition:
+        border-color .25s ease,
+        box-shadow .25s ease,
+        background .25s ease,
+        transform .2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--muted-2);
+}
+
+input:hover,
+textarea:hover {
+    border-color: var(--border-dark);
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--primary);
+
+    background: var(--card-solid);
+
+    box-shadow:
+        0 0 0 4px rgba(54, 25, 91, .08),
+        0 8px 20px rgba(54, 25, 91, .04);
+}
+
+textarea {
+    min-height: 205px;
+
+    resize: vertical;
+
+    line-height: 1.85;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.search {
+    flex: 1;
+
+    margin: 0;
+
+    padding: 12px 15px 12px 40px;
+
+    border-radius: 12px;
+
+    background:
+        var(--card-soft);
+
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23777784' stroke-width='1.7' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E");
+
+    background-repeat: no-repeat;
+
+    background-position: 14px center;
+
+    transition:
+        background-color .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+.search:focus {
+    background-color: var(--card-solid);
+}
+
+
+/* =========================================================
+   BUTTON BASE
+========================================================= */
+
+button {
+    position: relative;
+
+    width: 100%;
+
+    margin-top: 12px;
+
+    padding: 13px 15px;
+
+    border: 1px solid var(--primary);
+
+    border-radius: 11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary-hover)
+        );
+
+    color: #f7f3eb;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        background .25s ease,
+        color .2s ease,
+        transform .18s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+button::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -100%;
+
+    width: 70%;
+    height: 100%;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.12),
+        transparent
+    );
+
+    transform: skewX(-20deg);
+
+    transition: left .55s ease;
+}
+
+button:hover::after {
+    left: 130%;
+}
+
+button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary-hover),
+            var(--primary)
+        );
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 22px rgba(54, 25, 91, .18);
+}
+
+button:active {
+    transform: translateY(1px) scale(.99);
+}
+
+button:disabled {
+    opacity: .6;
+
+    cursor: wait;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   LIGHT BUTTON
+========================================================= */
+
+button.light {
+    border-color: var(--border);
+
+    background: transparent;
+
+    color: var(--text);
+
+    box-shadow: none;
+}
+
+button.light::after {
+    display: none;
+}
+
+button.light:hover {
+    border-color: var(--border-dark);
+
+    background: var(--card-soft);
+
+    color: var(--text);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.message {
+    min-height: 18px;
+
+    margin-top: 13px;
+
+    color: var(--danger);
+
+    font-size: 11px;
+
+    line-height: 1.7;
+
+    text-align: center;
+
+    animation: messageAppear .25s ease;
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   APP
+========================================================= */
+
+#catatan {
+    display: none;
+
+    animation: appAppear .45s ease;
+}
+
+@keyframes appAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================================
+   NOTE HEADING
+========================================================= */
+
+.note-heading {
+    margin: 27px 0 7px;
+
+    font-size: 31px;
+
+    letter-spacing: -.7px;
+}
+
+.note-description {
+    max-width: 420px;
+
+    margin: 0 0 23px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.8;
+}
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.toolbar {
+    display: flex;
+
+    gap: 8px;
+
+    margin-bottom: 19px;
+}
+
+.new-button {
+    width: auto;
+
+    min-width: 88px;
+
+    margin: 0;
+
+    padding: 11px 15px;
+
+    white-space: nowrap;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--secondary),
+            var(--secondary-hover)
+        );
+
+    border-color: var(--secondary);
+}
+
+.new-button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            var(--secondary-hover),
+            var(--secondary)
+        );
+}
+
+
+/* =========================================================
+   NOTE LIST
+========================================================= */
+
+.note-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 11px;
+}
+
+
+/* =========================================================
+   NOTE CARD
+========================================================= */
+
+.note-card {
+    position: relative;
+
+    padding: 18px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+
+    background: var(--card-solid);
+
+    overflow: hidden;
+
+    transition:
+        transform .25s cubic-bezier(.22, 1, .36, 1),
+        border-color .25s ease,
+        box-shadow .25s ease,
+        background .25s ease;
+
+    animation:
+        noteAppear .45s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.note-card::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 17px;
+    bottom: 17px;
+
+    width: 3px;
+
+    border-radius: 0 5px 5px 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            var(--primary),
+            transparent
+        );
+
+    opacity: 0;
+
+    transform: scaleY(.5);
+
+    transition:
+        opacity .25s ease,
+        transform .25s ease;
+}
+
+.note-card:hover {
+    transform: translateY(-4px);
+
+    border-color: var(--border-dark);
+
+    background: var(--card-hover);
+
+    box-shadow: var(--shadow-hover);
+}
+
+.note-card:hover::before {
+    opacity: .7;
+
+    transform: scaleY(1);
+}
+
+@keyframes noteAppear {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(8px)
+            scale(.985);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* =========================================================
+   NOTE TITLE
+========================================================= */
+
+.note-title {
+    margin-bottom: 6px;
+
+    color: var(--text);
+
+    font-family:
+        'Playfair Display',
+        Georgia,
+        serif;
+
+    font-size: var(--note-title-size);
+
+    font-weight: 500;
+
+    line-height: 1.4;
+
+    word-break: break-word;
+}
+
+/* =========================================================
+   NOTE DATE
+========================================================= */
+
+.note-date {
+    display: inline-flex;
+
+    align-items: center;
+
+    margin-bottom: 12px;
+
+    color: var(--muted-2);
+
+    font-size: 9px;
+
+    letter-spacing: .15px;
+}
+
+.note-date::before {
+    content: "•";
+
+    margin-right: 6px;
+
+    color: var(--primary);
+
+    opacity: .6;
+}
+
+
+/* =========================================================
+   NOTE PREVIEW
+========================================================= */
+
+.note-preview {
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.8;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 3;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   NOTE ACTIONS
+========================================================= */
+
+.note-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 6px;
+
+    margin-top: 16px;
+
+    padding-top: 11px;
+
+    border-top: 1px solid var(--border);
+}
+
+.note-actions button {
+    flex: 0 0 auto;
+
+    width: auto;
+
+    min-width: 55px;
+
+    margin: 0;
+
+    padding: 7px 10px;
+
+    border-radius: 8px;
+
+    font-size: 10px;
+
+    font-weight: 500;
+}
+
+.note-actions button::after {
+    display: none;
+}
+
+.note-actions button:first-child {
+    border-color: transparent;
+
+    background: var(--card-soft);
+
+    color: var(--text);
+}
+
+.note-actions button:first-child:hover {
+    background: var(--primary);
+
+    color: #fff;
+
+    box-shadow:
+        0 5px 14px rgba(54, 25, 91, .14);
+}
+
+.note-actions button:nth-child(2) {
+    border-color: transparent;
+
+    background: transparent;
+
+    color: var(--muted);
+}
+
+.note-actions button:nth-child(2):hover {
+    background: var(--card-soft);
+
+    color: var(--text);
+
+    box-shadow: none;
+}
+
+.note-actions button:nth-child(3) {
+    border-color: transparent;
+
+    background: transparent;
+
+    color: var(--danger);
+}
+
+.note-actions button:nth-child(3):hover {
+    background: var(--danger-bg);
+
+    color: var(--danger);
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty {
+    position: relative;
+
+    padding: 45px 20px;
+
+    border: 1px dashed var(--border-dark);
+
+    border-radius: 16px;
+
+    background: var(--card-soft);
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    line-height: 1.9;
+
+    text-align: center;
+
+    animation: emptyAppear .35s ease;
+}
+
+.empty::before {
+    content: "✦";
+
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: var(--primary);
+
+    opacity: .55;
+
+    font-size: 22px;
+}
+
+@keyframes emptyAppear {
+    from {
+        opacity: 0;
+
+        transform: scale(.98);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
+   EDITOR
+========================================================= */
+
+.editor {
+    margin-top: 24px;
+
+    padding-top: 25px;
+
+    border-top: 1px solid var(--border);
+
+    animation:
+        editorAppear .4s
+        cubic-bezier(.22, 1, .36, 1);
+}
+
+@keyframes editorAppear {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(10px)
+            scale(.985);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+.editor-title {
+    margin: 0 0 16px;
+
+    font-size: 24px;
+
+    letter-spacing: -.4px;
+}
+
+
+/* =========================================================
+   EDITOR TEXTAREA
+========================================================= */
+
+.editor textarea {
+    min-height: 230px;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status {
+    min-height: 18px;
+
+    margin-top: 15px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    line-height: 1.6;
+
+    text-align: center;
+
+    transition: color .25s ease;
+}
+
+.status.error {
+    color: var(--danger);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+    margin-top: 29px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid var(--border);
+
+    color: var(--muted-2);
+
+    font-size: 8px;
+
+    font-weight: 500;
+
+    letter-spacing: 1.7px;
+
+    text-align: center;
+
+    opacity: .8;
+}
+
+
+/* =========================================================
+   HIDDEN
+========================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+    padding: 35px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    text-align: center;
+}
+
+.loading::after {
+    content: "•••";
+
+    display: block;
+
+    margin-top: 5px;
+
+    letter-spacing: 4px;
+
+    animation: loadingDots 1.2s infinite;
+}
+
+@keyframes loadingDots {
+    0%, 100% {
+        opacity: .3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   SELECTION
+========================================================= */
+
+::selection {
+    background: rgba(81, 37, 117, .18);
+
+    color: var(--text);
+}
+
+
+/* =========================================================
+   FOCUS ACCESSIBILITY
+========================================================= */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--primary);
+
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 520px) {
+
+    body {
+        padding: 15px 10px;
+    }
+
+    .container {
+        padding: 23px;
+
+        border-radius: 20px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    .intro {
+        padding-top: 38px;
+    }
+
+    .note-heading {
+        font-size: 29px;
+    }
+}
+
+
+@media (max-width: 420px) {
+
+    body {
+        padding: 10px 7px;
+    }
+
+    .container {
+        padding: 20px;
+
+        border-radius: 18px;
+    }
+
+    .header {
+        padding-bottom: 18px;
+    }
+
+    .logo {
+        width: 40px;
+        height: 40px;
+
+        border-radius: 12px;
+    }
+
+    .brand-name {
+        font-size: 21px;
+    }
+
+    .intro {
+        padding: 31px 0 22px;
+    }
+
+    .intro::after {
+        top: 28px;
+        right: 2px;
+    }
+
+    h1 {
+        font-size: 29px;
+    }
+
+    .description {
+        font-size: 12px;
+
+        line-height: 1.85;
+    }
+
+    .note-heading {
+        font-size: 27px;
+    }
+
+    .toolbar {
+        flex-direction: row;
+    }
+
+    .search {
+        min-width: 0;
+    }
+
+    .new-button {
+        min-width: 72px;
+
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .note-card {
+        padding: 15px;
+    }
+
+    .note-title {
+        font-size: 17px;
+    }
+
+    .note-actions {
+        gap: 4px;
+    }
+
+    .note-actions button {
+        min-width: 50px;
+
+        padding:
+            7px 8px;
+    }
+}
+
+
+@media (max-width: 340px) {
+
+    .container {
+        padding: 17px;
+    }
+
+    .toolbar {
+        flex-direction: column;
+    }
+
+    .new-button {
+        width: 100%;
+    }
+
+    .note-actions {
+        justify-content: stretch;
+    }
+
+    .note-actions button {
+        flex: 1;
+    }
+
+    h1 {
+        font-size: 27px;
+    }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+
+        transition-duration: .01ms !important;
+    }
+}
+/* =========================================================
+   FONT ARAB
+========================================================= */
+
+[lang="ar"],
+.arabic,
+.arabic-text,
+textarea.arabic,
+input.arabic {
+    font-family: 'Amiri', serif;
+
+    direction: rtl;
+    text-align: right;
+
+    font-size: 25px;
+    line-height: 2;
+}
+/* =========================================================
+   FONT ARAB & CATATAN
+========================================================= */
+
+:root {
+    /* Ukuran font isi catatan */
+    --note-font-size: 25px;
+
+    /* Ukuran font Arab */
+    --arabic-font-size: 25px;
+}
+
+
+/* Teks Arab */
+.arabic {
+    font-family: 'Amiri', serif !important;
+
+    direction: rtl;
+    text-align: right;
+
+    font-size: var(--arabic-font-size);
+    line-height: 2;
+}
+
+
+/* Isi textarea catatan */
+#isiCatatan {
+    font-size: var(--note-font-size);
+    line-height: 1.9;
+
+    transition:
+        font-size .2s ease,
+        direction .2s ease,
+        text-align .2s ease;
+}
+
+
+/* Saat textarea berisi teks Arab */
+#isiCatatan.arabic {
+    font-family: 'Amiri', serif;
+
+    direction: rtl;
+    text-align: right;
+
+    font-size: var(--arabic-font-size);
+    line-height: 2;
+}
+
+
+/* Placeholder tetap terlihat normal */
+#isiCatatan::placeholder {
+    font-family: 'DM Sans', sans-serif;
+
+    direction: ltr;
+    text-align: left;
+
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+
+<main class="container">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="brand">
+
+            <div class="logo">⌑</div>
+
+            <div>
+                <div class="brand-name">FOZTONOTE.</div>
+                <div class="brand-sub">YOUR NOTE IS EVERYWHERE</div>
+            </div>
+
+        </div>
+
+        <div class="header-actions">
+
+    <button
+        class="theme-button"
+        id="themeButton"
+        onclick="ubahTema()"
+        title="Ganti tema">
+        ☾
+    </button>
+
+    <div class="lock">♧</div>
+
+</div>
+
+    </header>
+
+
+    <!-- PASSWORD -->
+
+    <section id="penghalang">
+
+        <div class="intro">
+
+            <div class="eyebrow">
+                Umar Hamdan asad
+            </div>
+
+            <h1>
+                Be Smart Dude.
+            </h1>
+
+            <p class="description">
+                jangan berhenti berinspirasi.
+            </p>
+
+        </div>
+
+
+        <label for="password">
+            Password
+        </label>
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Masukkan password..."
+            autocomplete="off"
+        >
+
+        <button onclick="cekPassword()">
+            Buka catatan ↗
+        </button>
+
+        <div
+            id="pesan"
+            class="message"
+            role="status"
+        ></div>
+
+    </section>
+
+
+    <!-- CATATAN -->
+
+    <section id="catatan">
+
+        <div
+            class="eyebrow"
+            style="margin-top:28px"
+        >
+            YOUR PERSONAL JOURNAL
+        </div>
+
+
+        <h2 class="note-heading">
+            Catatan saya.
+        </h2>
+
+
+        <p class="note-description">
+            Tidak semua hal harus diceritakan kepada orang lain.
+            Sebagian cukup disimpan di sini.
+        </p>
+
+
+        <!-- SEARCH -->
+
+        <div class="toolbar">
+
+            <input
+                class="search"
+                id="pencarian"
+                type="search"
+                placeholder="Cari catatan..."
+                autocomplete="off"
+            >
+
+            <button
+                class="new-button"
+                onclick="catatanBaru()"
+            >
+                + Baru
+            </button>
+
+        </div>
+
+
+        <!-- LIST -->
+
+        <div
+            id="daftarCatatan"
+            class="note-list"
+        ></div>
+
+
+        <!-- EDITOR -->
+
+        <div
+            id="editor"
+            class="editor hidden"
+        >
+
+            <h3 class="editor-title">
+                Catatan
+            </h3>
+
+
+            <label for="judul">
+                Judul catatan
+            </label>
+
+            <input
+                id="judul"
+                type="text"
+                placeholder="Hari ini..."
+                maxlength="200"
+            >
+
+
+            <label for="isiCatatan">
+                Isi catatan
+            </label>
+
+            <textarea
+                id="isiCatatan"
+                placeholder="Tuliskan apa yang sedang kamu pikirkan..."
+            ></textarea>
+
+
+            <button onclick="simpanCatatan()">
+                Simpan catatan
+            </button>
+
+
+            <button
+                class="light"
+                onclick="batalEdit()"
+            >
+                Batal
+            </button>
+
+        </div>
+
+
+        <div
+            id="status"
+            class="status"
+        ></div>
+
+
+        <button
+            class="light"
+            onclick="kunciLagi()"
+        >
+            Kunci kembali
+        </button>
+
+    </section>
+
+
+    <footer class="footer">
+        A QUIET PLACE FOR YOUR THOUGHTS.
+    </footer>
+
+</main>
+
+
+<script>
+
+/* =========================================================
+   KONFIGURASI
+   ========================================================= */
+
+const API_URL =
+    "https://qjoifftwvpwtqqjlwbhm.supabase.co/functions/v1/private-notes";
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let accessKey = "";
+
+let daftar = [];
+
+let sedangEdit = null;
+
+
+/* =========================================================
+   ELEMENT
+   ========================================================= */
+
+const penghalang =
+    document.getElementById("penghalang");
+
+const catatan =
+    document.getElementById("catatan");
+
+const passwordInput =
+    document.getElementById("password");
+
+const pesan =
+    document.getElementById("pesan");
+
+const pencarian =
+    document.getElementById("pencarian");
+
+const daftarCatatan =
+    document.getElementById("daftarCatatan");
+
+const editor =
+    document.getElementById("editor");
+
+const judul =
+    document.getElementById("judul");
+
+const isiCatatan =
+    document.getElementById("isiCatatan");
+
+/* =========================================================
+   DETEKSI TEKS ARAB
+========================================================= */
+
+function deteksiBahasaCatatan() {
+    const arabicRegex =
+        /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
+
+    // Deteksi bahasa pada judul dan isi catatan
+    [judul, isiCatatan].forEach(function (element) {
+        const teks = element.value.trim();
+
+        if (teks && arabicRegex.test(teks)) {
+            element.classList.add("arabic");
+        } else {
+            element.classList.remove("arabic");
+        }
+    });
+}
+
+// Deteksi otomatis saat mengetik judul
+judul.addEventListener("input", deteksiBahasaCatatan);
+
+// Deteksi otomatis saat mengetik isi catatan
+isiCatatan.addEventListener("input", deteksiBahasaCatatan);
+
+
+/* Jalankan deteksi setiap kali mengetik */
+
+isiCatatan.addEventListener(
+    "input",
+    deteksiBahasaCatatan
+);
+const status =
+    document.getElementById("status");
+
+
+/* =========================================================
+   REQUEST API
+   ========================================================= */
+
+async function apiRequest(
+    action,
+    method = "GET",
+    body = null,
+    extraParams = ""
+) {
+
+    let url =
+        API_URL +
+        "?action=" +
+        encodeURIComponent(action);
+
+    if (extraParams) {
+        url += "&" + extraParams;
+    }
+
+
+    const options = {
+
+        method: method,
+
+        headers: {
+
+            "x-note-key": accessKey
+
+        }
+
+    };
+
+
+    if (body !== null) {
+
+        options.headers["Content-Type"] =
+            "application/json";
+
+        options.body =
+            JSON.stringify(body);
+
+    }
+
+
+    const response =
+        await fetch(url, options);
+
+
+    let data;
+
+    try {
+
+        data =
+            await response.json();
+
+    } catch {
+
+        data = {};
+
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            "Terjadi kesalahan pada server."
+        );
+
+    }
+
+
+    return data;
+}
+
+
+/* =========================================================
+   PASSWORD / LOGIN
+   ========================================================= */
+
+async function cekPassword() {
+
+    const password =
+        passwordInput.value.trim();
+
+
+    if (!password) {
+
+        pesan.textContent =
+            "Masukkan password terlebih dahulu.";
+
+        passwordInput.focus();
+
+        return;
+
+    }
+
+
+    pesan.textContent =
+        "Memeriksa password...";
+
+
+    accessKey = password;
+
+
+    try {
+
+        /*
+         * Kita menggunakan list sebagai
+         * pengujian password.
+         */
+
+        const data =
+            await apiRequest("list", "GET");
+
+
+        /*
+         * Jika sampai sini berarti
+         * password benar.
+         */
+
+        penghalang.classList.add("hidden");
+
+        catatan.style.display = "block";
+
+        pesan.textContent = "";
+
+        passwordInput.value = "";
+
+        await tampilkanCatatan(data);
+
+    }
+
+    catch (error) {
+
+        accessKey = "";
+
+        passwordInput.value = "";
+
+        pesan.textContent =
+            "Password salah atau akses ditolak.";
+
+        passwordInput.focus();
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD CATATAN
+   ========================================================= */
+
+async function muatCatatan() {
+
+    setStatus("Memuat catatan...");
+
+
+    try {
+
+        const data =
+            await apiRequest("list", "GET");
+
+
+        await tampilkanCatatan(data);
+
+        setStatus("");
+
+    }
+
+    catch (error) {
+
+        setStatus(
+            error.message,
+            true
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   TAMPILKAN CATATAN
+   ========================================================= */
+
+async function tampilkanCatatan(data) {
+
+    daftar =
+        Array.isArray(data)
+            ? data
+            : [];
+
+
+    renderCatatan();
+
+}
+
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+
+
+function renderCatatan() {
+    const keyword = pencarian.value.trim().toLowerCase();
+
+    // Deteksi huruf Arab
+    const arabicRegex =
+        /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
+
+    let hasil = daftar.filter(note => {
+        const title = String(note.title || "").toLowerCase();
+        const content = String(note.content || "").toLowerCase();
+
+        return title.includes(keyword) ||
+               content.includes(keyword);
+    });
+
+    // Urutkan catatan terbaru
+    hasil.sort((a, b) => {
+        return new Date(b.updated_at) - new Date(a.updated_at);
+    });
+
+    if (hasil.length === 0) {
+        daftarCatatan.innerHTML = `
+            <div class="empty">
+                ${keyword
+                    ? "Tidak ada catatan yang cocok dengan pencarianmu."
+                    : "Belum ada catatan.<br>Buat catatan pertamamu."}
+            </div>
+        `;
+        return;
+    }
+
+    daftarCatatan.innerHTML = hasil.map(note => {
+        const titleText = note.title || "Tanpa judul";
+        const contentText = note.content || "";
+
+        const titleClass = arabicRegex.test(titleText)
+            ? "note-title arabic"
+            : "note-title";
+
+        const previewClass = arabicRegex.test(contentText)
+            ? "note-preview arabic"
+            : "note-preview";
+
+        return `
+            <article class="note-card">
+                <div class="${titleClass}">
+                    ${escapeHTML(titleText)}
+                </div>
+
+                <div class="note-date">
+                    ${formatTanggal(note.updated_at)}
+                </div>
+
+                <div class="${previewClass}">
+                    ${escapeHTML(contentText) || "Catatan kosong."}
+                </div>
+
+                <div class="note-actions">
+                    <button class="small"
+                        onclick="editCatatan('${escapeHTML(note.id)}')">
+                        Edit
+                    </button>
+
+                    <button class="small light"
+                        onclick="salinCatatan('${escapeHTML(note.id)}')">
+                        Salin
+                    </button>
+
+                    <button class="small light"
+                        onclick="hapusCatatan('${escapeHTML(note.id)}')">
+                        Hapus
+                    </button>
+                </div>
+            </article>
+        `;
+    }).join("");
+}
+
+
+/* =========================================================
+   CATATAN BARU
+   ========================================================= */
+
+function catatanBaru() {
+    sedangEdit = null;
+    judul.value = "";
+    isiCatatan.value = "";
+    editor.classList.remove("hidden");
+    judul.focus();
+    editor.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+}
+
+
+/* =========================================================
+   EDIT
+   ========================================================= */
+
+function editCatatan(id) {
+
+    const note =
+        daftar.find(
+            item => item.id === id
+        );
+
+
+    if (!note) return;
+
+
+    sedangEdit = id;
+
+    judul.value =
+        note.title || "";
+
+    isiCatatan.value =
+        note.content || "";
+
+
+    editor.classList.remove("hidden");
+
+
+    editor.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+
+
+    judul.focus();
+
+}
+
+
+/* =========================================================
+   SIMPAN
+   ========================================================= */
+
+async function simpanCatatan() {
+
+    const title =
+        judul.value.trim();
+
+    const content =
+        isiCatatan.value;
+
+
+    if (!title) {
+
+        setStatus(
+            "Judul catatan tidak boleh kosong.",
+            true
+        );
+
+        judul.focus();
+
+        return;
+
+    }
+
+
+    const tombol =
+        editor.querySelector("button");
+
+
+    tombol.disabled = true;
+
+    tombol.textContent =
+        "Menyimpan...";
+
+
+    try {
+
+        if (sedangEdit) {
+
+            await apiRequest(
+                "update",
+                "PUT",
+                {
+                    id: sedangEdit,
+                    title: title,
+                    content: content
+                }
+            );
+
+
+            setStatus(
+                "Catatan berhasil diperbarui."
+            );
+
+        } else {
+
+            await apiRequest(
+                "create",
+                "POST",
+                {
+                    title: title,
+                    content: content
+                }
+            );
+
+
+            setStatus(
+                "Catatan berhasil disimpan."
+            );
+
+        }
+
+
+        sedangEdit = null;
+
+        editor.classList.add("hidden");
+
+        await muatCatatan();
+
+    }
+
+    catch (error) {
+
+        setStatus(
+            error.message,
+            true
+        );
+
+    }
+
+
+    tombol.disabled = false;
+
+    tombol.textContent =
+        "Simpan catatan";
+
+}
+
+
+/* =========================================================
+   BATAL EDIT
+   ========================================================= */
+
+function batalEdit() {
+
+    sedangEdit = null;
+
+    judul.value = "";
+
+    isiCatatan.value = "";
+
+    editor.classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   HAPUS
+   ========================================================= */
+
+async function hapusCatatan(id) {
+
+    const note =
+        daftar.find(
+            item => item.id === id
+        );
+
+
+    if (!note) return;
+
+
+    const yakin =
+        confirm(
+            `Hapus catatan "${note.title}"?`
+        );
+
+
+    if (!yakin) return;
+
+
+    try {
+
+        await apiRequest(
+            "delete",
+            "DELETE",
+            null,
+            "id=" +
+            encodeURIComponent(id)
+        );
+
+
+        setStatus(
+            "Catatan telah dihapus."
+        );
+
+
+        await muatCatatan();
+
+    }
+
+    catch (error) {
+
+        setStatus(
+            error.message,
+            true
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SALIN
+   ========================================================= */
+
+async function salinCatatan(id) {
+
+    const note =
+        daftar.find(
+            item => item.id === id
+        );
+
+
+    if (!note) return;
+
+
+    try {
+
+        await navigator.clipboard.writeText(
+            note.content || ""
+        );
+
+
+        setStatus(
+            "Isi catatan berhasil disalin."
+        );
+
+    }
+
+    catch (error) {
+
+        /*
+         * Fallback untuk browser tertentu.
+         */
+
+        const textarea =
+            document.createElement("textarea");
+
+        textarea.value =
+            note.content || "";
+
+        document.body.appendChild(
+            textarea
+        );
+
+        textarea.select();
+
+        document.execCommand("copy");
+
+        textarea.remove();
+
+
+        setStatus(
+            "Isi catatan berhasil disalin."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   KUNCI KEMBALI
+   ========================================================= */
+
+function kunciLagi() {
+
+    accessKey = "";
+
+    daftar = [];
+
+    sedangEdit = null;
+
+    editor.classList.add("hidden");
+
+    judul.value = "";
+
+    isiCatatan.value = "";
+
+    pencarian.value = "";
+
+    daftarCatatan.innerHTML = "";
+
+    catatan.style.display = "none";
+
+    penghalang.classList.remove("hidden");
+
+    pesan.textContent = "";
+
+    passwordInput.value = "";
+
+    passwordInput.focus();
+
+}
+
+
+/* =========================================================
+   PENCARIAN
+   ========================================================= */
+
+pencarian.addEventListener(
+    "input",
+    renderCatatan
+);
+
+
+/* =========================================================
+   ENTER PASSWORD
+   ========================================================= */
+
+passwordInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+
+            cekPassword();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+function setStatus(
+    text,
+    error = false
+) {
+
+    status.textContent =
+        text || "";
+
+    status.classList.toggle(
+        "error",
+        error
+    );
+
+}
+
+
+/* =========================================================
+   FORMAT TANGGAL
+   ========================================================= */
+
+function formatTanggal(date) {
+
+    if (!date) return "";
+
+    const d =
+        new Date(date);
+
+
+    if (Number.isNaN(d.getTime())) {
+
+        return "";
+
+    }
+
+
+    return d.toLocaleString(
+        "id-ID",
+        {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+
+        .replaceAll("&", "&amp;")
+
+        .replaceAll("<", "&lt;")
+
+        .replaceAll(">", "&gt;")
+
+        .replaceAll('"', "&quot;")
+
+        .replaceAll("'", "&#039;");
+
+}
+
+function ubahTema() {
+    const html = document.documentElement;
+    const tombol = document.getElementById("themeButton");
+
+    const temaSekarang = html.getAttribute("data-theme");
+
+    if (temaSekarang === "dark") {
+        html.removeAttribute("data-theme");
+        tombol.textContent = "☾";
+
+        localStorage.setItem("ruangTema", "light");
+    } else {
+        html.setAttribute("data-theme", "dark");
+        tombol.textContent = "☼";
+
+        localStorage.setItem("ruangTema", "dark");
+    }
+}
+
+function muatTema() {
+    const tema = localStorage.getItem("ruangTema");
+    const tombol = document.getElementById("themeButton");
+
+    if (tema === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+
+        if (tombol) {
+            tombol.textContent = "☼";
+        }
+    } else {
+        if (tombol) {
+            tombol.textContent = "☾";
+        }
+    }
+}
+
+muatTema();
+
+</script>
+
+</body>
+</html>
