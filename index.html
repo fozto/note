@@ -703,14 +703,6 @@ button.light:hover {
     color: white;
 }
 
-#panelKalender {
-    margin-bottom: 20px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: var(--surface-soft);
-}
-
 @media (max-width: 420px) {
     .journal-nav {
         gap: 6px;
@@ -785,6 +777,108 @@ button.light:hover {
     background: var(--surface-soft);
     color: #d8c1f0;
     border-color: var(--border);
+}
+
+/* FILTER KATEGORI */
+
+#daftarFilter {
+    margin-top: -10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-soft);
+}
+
+#daftarFilter button {
+    min-height: 36px;
+    padding: 8px 13px;
+    border-color: var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 12px;
+}
+
+#daftarFilter button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+#daftarFilter button:hover {
+    border-color: var(--primary);
+}
+
+.journal-nav button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* PANEL SETTING KATEGORI */
+
+#panelSetting {
+    margin: 0 0 20px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface-soft);
+}
+
+.setting-title {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.setting-description {
+    margin: 8px 0 16px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.setting-row select,
+.setting-row input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+}
+
+.setting-row span {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.setting-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.setting-actions button {
+    width: auto;
+}
+
+@media (max-width: 500px) {
+    .setting-row {
+        flex-wrap: wrap;
+    }
+
+    .setting-row select,
+    .setting-row input {
+        flex-basis: 100%;
+    }
+
+    .setting-row span {
+        display: none;
+    }
 }
 
 </style>
@@ -916,7 +1010,6 @@ button.light:hover {
         placeholder="Cari catatan..."
         autocomplete="off"
     >
-f
     <button
         class="new-button"
         onclick="catatanBaru()"
@@ -925,43 +1018,72 @@ f
     </button>
 </div>
 
+
 <div class="journal-nav">
-    <button class="light active" id="btnSemua"
-        onclick="ubahFilter('semua')">
+    <button
+        class="light active"
+        id="btnSemua"
+        onclick="filterSemua()">
         Semua
     </button>
 
-    <button class="light" id="btnKalender"
-        onclick="ubahFilter('kalender')">
-        📅 Kalender
+    <button
+        class="light"
+        id="btnFilter"
+        onclick="toggleFilter()">
+        Filter ▾
+    </button>
+
+    <button
+        class="light"
+        id="btnSetting"
+        onclick="toggleSetting()">
+        ⚙ Setting
     </button>
 </div>
 
+<div id="panelSetting" class="hidden">
+    <div class="setting-title">Pengaturan kategori</div>
+    <p class="setting-description">
+        Pilih kategori yang ingin kamu ubah namanya.
+    </p>
 
-<div id="panelKalender" class="hidden">
-    <label for="tanggalMulai">Tanggal mulai</label>
-    <input type="date" id="tanggalMulai">
+    <div class="setting-row">
+        <select id="kategoriLama">
+            <option value="">Pilih kategori</option>
+        </select>
 
-    <label for="tanggalAkhir">Tanggal akhir</label>
-    <input type="date" id="tanggalAkhir">
+        <span>→</span>
 
-    <div class="toolbar" style="margin-top: 14px;">
+        <input
+            id="kategoriBaru"
+            type="text"
+            placeholder="Nama kategori baru"
+            maxlength="60"
+        >
+    </div>
+
+    <div class="setting-actions">
         <button
             type="button"
-            onclick="terapkanFilterTanggal()">
-            Terapkan filter
+            onclick="ubahNamaKategori()">
+            Simpan perubahan
         </button>
 
         <button
             type="button"
             class="light"
-            onclick="resetTanggal()">
-            Reset tanggal
+            onclick="toggleSetting()">
+            Tutup
         </button>
     </div>
 
-    <div id="infoRentangTanggal" class="message"></div>
+    <div id="pesanSetting" class="message"
+         role="status"></div>
 </div>
+
+<div id="daftarFilter" class="journal-nav hidden"></div>
+
 
 <!-- PEMBUNGKUS DAFTAR + EDITOR -->
 <div class="workspace">
@@ -1024,9 +1146,9 @@ f
     </button>
 </div>
 
-            <button onclick="simpanCatatan()">
-                Simpan catatan
-            </button>
+            <button id="tombolSimpan" onclick="simpanCatatan()">
+              Simpan catatan
+              </button>
 
 
             <button
@@ -1043,14 +1165,6 @@ f
             id="status"
             class="status"
         ></div>
-
-
-        <button
-            class="light"
-            onclick="kunciLagi()"
-        >
-            Kunci kembali
-        </button>
 
     </section>
 
@@ -1271,6 +1385,8 @@ async function cekPassword() {
         passwordInput.value = "";
 
         await tampilkanCatatan(data);
+        
+        mulaiTimerKunciOtomatis();
 
     }
 
@@ -1327,17 +1443,14 @@ async function muatCatatan() {
    TAMPILKAN CATATAN
    ========================================================= */
 
+
 async function tampilkanCatatan(data) {
+    daftar = Array.isArray(data) ? data : [];
 
-    daftar =
-        Array.isArray(data)
-            ? data
-            : [];
-
-
+    renderPilihanFilter();
     renderCatatan();
-
 }
+
 
 
 /* =========================================================
@@ -1353,39 +1466,22 @@ function renderCatatan() {
         /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
 
     
+
+
 let hasil = daftar.filter(note => {
     const title = String(note.title || "").toLowerCase();
     const content = String(note.content || "").toLowerCase();
+    const category = String(note.category || "").trim();
 
     const cocokPencarian =
-        title.includes(keyword) || content.includes(keyword);
+        title.includes(keyword) ||
+        content.includes(keyword);
 
+    const cocokKategori =
+        kategoriAktif === null ||
+        category === kategoriAktif;
 
-    
-const tanggalNote = note.updated_at
-    ? new Date(note.updated_at)
-    : null;
-
-const tanggalLokal =
-    tanggalNote && !Number.isNaN(tanggalNote.getTime())
-        ? [
-            tanggalNote.getFullYear(),
-            String(tanggalNote.getMonth() + 1).padStart(2, "0"),
-            String(tanggalNote.getDate()).padStart(2, "0")
-          ].join("-")
-        : "";
-
-const cocokTanggal =
-    filterAktif !== "kalender" ||
-    (
-        tanggalLokal !== "" &&
-        (!tanggalMulai.value ||
-            tanggalLokal >= tanggalMulai.value) &&
-        (!tanggalAkhir.value ||
-            tanggalLokal <= tanggalAkhir.value)
-    );
-
-    return cocokPencarian && cocokTanggal;
+    return cocokPencarian && cocokKategori;
 });
 
     // Urutkan catatan terbaru
@@ -1461,25 +1557,6 @@ return `
         `;
     }).join("");
 }
-
-
-/* =========================================================
-   CATATAN BARU
-   ========================================================= */
-
-function catatanBaru() {
-    sedangEdit = null;
-    judul.value = "";
-    isiCatatan.value = "";
-    editor.classList.remove("hidden");
-    judul.focus();
-    editor.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-
-}
-
 
 function editCatatan(id) {
 
@@ -1769,37 +1846,6 @@ async function salinCatatan(id) {
    KUNCI KEMBALI
    ========================================================= */
 
-function kunciLagi() {
-
-    accessKey = "";
-
-    daftar = [];
-
-    sedangEdit = null;
-
-    editor.classList.add("hidden");
-
-    judul.value = "";
-
-    isiCatatan.value = "";
-
-    pencarian.value = "";
-
-    daftarCatatan.innerHTML = "";
-
-    catatan.style.display = "none";
-
-    penghalang.classList.remove("hidden");
-
-    pesan.textContent = "";
-
-    passwordInput.value = "";
-
-    passwordInput.focus();
-
-}
-
-
 /* =========================================================
    PENCARIAN
    ========================================================= */
@@ -1827,24 +1873,16 @@ passwordInput.addEventListener(
     }
 );
 
-
-/* =========================================================
-   STATUS
-   ========================================================= */
-
 function setStatus(
     text,
     error = false
 ) {
-
     status.textContent =
         text || "";
-
     status.classList.toggle(
         "error",
         error
     );
-
 }
 
 
@@ -1943,61 +1981,6 @@ muatTema();
 passwordInput.addEventListener("input", function () {
     this.value = this.value.replace(/[^0-9]/g, "");
 });
-
-let filterAktif = "semua";
-
-const panelKalender =
-    document.getElementById("panelKalender");
-
-function ubahFilter(filter) {
-    filterAktif = filter;
-
-    document.getElementById("btnSemua")
-        .classList.toggle("active", filter === "semua");
-
-    document.getElementById("btnKalender")
-        .classList.toggle("active", filter === "kalender");
-
-    panelKalender.classList.toggle(
-        "hidden",
-        filter !== "kalender"
-    );
-
-    renderCatatan();
-}
-
-
-const tanggalMulai = document.getElementById("tanggalMulai");
-const tanggalAkhir = document.getElementById("tanggalAkhir");
-const infoRentangTanggal =
-    document.getElementById("infoRentangTanggal");
-
-function terapkanFilterTanggal() {
-    if (
-        tanggalMulai.value &&
-        tanggalAkhir.value &&
-        tanggalMulai.value > tanggalAkhir.value
-    ) {
-        infoRentangTanggal.textContent =
-            "Tanggal mulai tidak boleh melebihi tanggal akhir.";
-        return;
-    }
-
-    infoRentangTanggal.textContent = "";
-    renderCatatan();
-}
-
-function resetTanggal() {
-    tanggalMulai.value = "";
-    tanggalAkhir.value = "";
-    infoRentangTanggal.textContent = "";
-    renderCatatan();
-}
-
-tanggalMulai.addEventListener("change", terapkanFilterTanggal);
-tanggalAkhir.addEventListener("change", terapkanFilterTanggal);
-
-
 /* =========================================================
    KATEGORI CATATAN
    ========================================================= */
@@ -2083,6 +2066,290 @@ function catatanBaru() {
         block: "start"
     });
 }
+
+/* =========================================================
+   FILTER CATATAN BERDASARKAN KATEGORI
+   ========================================================= */
+
+let kategoriAktif = null;
+let filterTerbuka = false;
+
+const btnSemua = document.getElementById("btnSemua");
+const btnFilter = document.getElementById("btnFilter");
+const daftarFilter = document.getElementById("daftarFilter");
+
+function toggleFilter() {
+    filterTerbuka = !filterTerbuka;
+
+    daftarFilter.classList.toggle(
+        "hidden",
+        !filterTerbuka
+    );
+
+    btnFilter.textContent = filterTerbuka
+        ? "Filter ▴"
+        : "Filter ▾";
+
+    if (filterTerbuka) {
+        renderPilihanFilter();
+    }
+}
+
+function filterSemua() {
+    kategoriAktif = null;
+
+    btnSemua.classList.add("active");
+    btnFilter.classList.remove("active");
+
+    renderCatatan();
+    renderPilihanFilter();
+}
+
+function pilihKategoriFilter(kategori) {
+    kategoriAktif = kategori;
+
+    btnSemua.classList.remove("active");
+    btnFilter.classList.add("active");
+
+    renderCatatan();
+    renderPilihanFilter();
+}
+
+function renderPilihanFilter() {
+    const kategoriUnik = [
+        ...new Set(
+            daftar
+                .map(note => String(note.category || "").trim())
+                .filter(Boolean)
+        )
+    ].sort((a, b) => a.localeCompare(b, "id"));
+
+    if (kategoriUnik.length === 0) {
+        daftarFilter.innerHTML = `
+            <div class="empty">
+                Belum ada kategori pada catatan.
+            </div>
+        `;
+        return;
+    }
+
+    daftarFilter.innerHTML = kategoriUnik.map(kategori => `
+        <button
+            type="button"
+            class="${kategoriAktif === kategori ? "active" : ""}"
+            data-kategori="${escapeHTML(kategori)}">
+            ${escapeHTML(kategori)}
+        </button>
+    `).join("");
+
+    daftarFilter.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", function () {
+            pilihKategoriFilter(
+                this.dataset.kategori
+            );
+        });
+    });
+}
+
+/* =========================================================
+   SETTING KATEGORI
+   ========================================================= */
+
+let settingTerbuka = false;
+
+function toggleSetting() {
+    settingTerbuka = !settingTerbuka;
+
+    document.getElementById("panelSetting")
+        .classList.toggle("hidden", !settingTerbuka);
+
+    if (settingTerbuka) {
+        renderPilihanSetting();
+        document.getElementById("pesanSetting").textContent = "";
+    }
+}
+
+function renderPilihanSetting() {
+    const select = document.getElementById("kategoriLama");
+
+    const kategoriUnik = [
+        ...new Set(
+            daftar
+                .map(note => String(note.category || "").trim())
+                .filter(Boolean)
+        )
+    ].sort((a, b) => a.localeCompare(b, "id"));
+
+    const pilihanSebelumnya = select.value;
+
+    select.innerHTML =
+        '<option value="">Pilih kategori</option>';
+
+    kategoriUnik.forEach(nama => {
+        const option = document.createElement("option");
+        option.value = nama;
+        option.textContent = nama;
+        select.appendChild(option);
+    });
+
+    if (kategoriUnik.includes(pilihanSebelumnya)) {
+        select.value = pilihanSebelumnya;
+    }
+}
+
+async function ubahNamaKategori() {
+    const select = document.getElementById("kategoriLama");
+    const inputBaru = document.getElementById("kategoriBaru");
+    const pesanSetting = document.getElementById("pesanSetting");
+
+    const namaLama = select.value;
+    const namaBaru = inputBaru.value.trim();
+
+    if (!namaLama) {
+        pesanSetting.textContent =
+            "Pilih kategori yang ingin diubah.";
+        return;
+    }
+
+    if (!namaBaru) {
+        pesanSetting.textContent =
+            "Masukkan nama kategori baru.";
+        inputBaru.focus();
+        return;
+    }
+
+    if (namaLama === namaBaru) {
+        pesanSetting.textContent =
+            "Nama kategori tidak berubah.";
+        return;
+    }
+
+    const sudahAda = daftar.some(note =>
+        String(note.category || "").trim().toLowerCase() ===
+        namaBaru.toLowerCase()
+    );
+
+    if (sudahAda) {
+        pesanSetting.textContent =
+            "Kategori tersebut sudah digunakan.";
+        return;
+    }
+
+    const tombol = document.querySelector(
+        '#panelSetting button[onclick="ubahNamaKategori()"]'
+    );
+
+    tombol.disabled = true;
+    pesanSetting.textContent =
+        "Memperbarui kategori...";
+
+    try {
+        const hasil = await apiRequest(
+            "rename-category",
+            "PUT",
+            {
+                oldCategory: namaLama,
+                newCategory: namaBaru
+            }
+        );
+
+        if (!hasil.success) {
+            throw new Error("Perubahan kategori gagal.");
+        }
+
+        if (kategoriAktif === namaLama) {
+            kategoriAktif = namaBaru;
+        }
+
+        await muatCatatan();
+
+        renderPilihanSetting();
+        select.value = "";
+
+        inputBaru.value = "";
+
+        pesanSetting.textContent =
+            `Kategori "${namaLama}" berhasil diubah menjadi "${namaBaru}".`;
+
+    } catch (error) {
+        pesanSetting.textContent =
+            "Gagal mengubah kategori: " + error.message;
+
+        await muatCatatan();
+
+        renderPilihanSetting();
+
+    } finally {
+        tombol.disabled = false;
+    }
+}
+
+
+/* =========================================================
+   KUNCI OTOMATIS SETELAH 5 MENIT TANPA AKTIVITAS
+   ========================================================= */
+
+const BATAS_WAKTU_KUNCI = 5 * 60 * 1000;
+let timerKunciOtomatis = null;
+
+function mulaiTimerKunciOtomatis() {
+    clearTimeout(timerKunciOtomatis);
+
+    if (!accessKey) return;
+
+    timerKunciOtomatis = setTimeout(function () {
+        kunciOtomatis();
+    }, BATAS_WAKTU_KUNCI);
+}
+
+function aktivitasPengguna() {
+    if (!accessKey) return;
+
+    mulaiTimerKunciOtomatis();
+}
+
+function kunciOtomatis() {
+    clearTimeout(timerKunciOtomatis);
+    timerKunciOtomatis = null;
+
+    accessKey = "";
+    daftar = [];
+    sedangEdit = null;
+    kategoriAktif = null;
+
+    editor.classList.add("hidden");
+    judul.value = "";
+    isiCatatan.value = "";
+    kategoriCatatan.value = "";
+    pencarian.value = "";
+    daftarCatatan.innerHTML = "";
+
+    catatan.style.display = "none";
+    penghalang.classList.remove("hidden");
+
+    pesan.textContent =
+        "Catatan terkunci otomatis karena tidak ada aktivitas selama 5 menit.";
+
+    passwordInput.value = "";
+    passwordInput.focus();
+}
+
+
+[
+    "mousemove",
+    "mousedown",
+    "keydown",
+    "touchstart",
+    "scroll",
+    "click"
+].forEach(function (eventName) {
+    document.addEventListener(
+        eventName,
+        aktivitasPengguna,
+        { passive: true }
+    );
+});
+
 </script>
 
 </body>
