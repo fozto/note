@@ -711,11 +711,6 @@ button.light:hover {
     background: var(--surface-soft);
 }
 
-.favorite-button {
-    color: #d6a447 !important;
-    font-size: 17px !important;
-}
-
 @media (max-width: 420px) {
     .journal-nav {
         gap: 6px;
@@ -725,6 +720,71 @@ button.light:hover {
         flex: 1;
         padding: 8px;
     }
+}
+
+.category-editor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-editor select {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 15px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--input);
+    color: var(--text);
+    font: inherit;
+    font-size: 14px;
+}
+
+.category-editor button {
+    flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+    .category-editor {
+        flex-wrap: wrap;
+    }
+
+    .category-editor select,
+    .category-editor button {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   KATEGORI CATATAN
+   ========================================================= */
+
+.note-category {
+    display: inline-block;
+    max-width: 100%;
+    margin: 0 0 14px;
+    padding: 6px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    background: var(--surface-soft);
+    color: var(--primary);
+
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+
+    overflow-wrap: anywhere;
+    vertical-align: middle;
+}
+
+/* Tema gelap */
+[data-theme="dark"] .note-category {
+    background: var(--surface-soft);
+    color: #d8c1f0;
+    border-color: var(--border);
 }
 
 </style>
@@ -856,7 +916,7 @@ button.light:hover {
         placeholder="Cari catatan..."
         autocomplete="off"
     >
-
+f
     <button
         class="new-button"
         onclick="catatanBaru()"
@@ -871,24 +931,37 @@ button.light:hover {
         Semua
     </button>
 
-    <button class="light" id="btnFavorit"
-        onclick="ubahFilter('favorit')">
-        ⭐ Favorit
-    </button>
-
     <button class="light" id="btnKalender"
         onclick="ubahFilter('kalender')">
         📅 Kalender
     </button>
 </div>
 
+
 <div id="panelKalender" class="hidden">
-    <label for="tanggalJurnal">Pilih tanggal jurnal</label>
-    <input type="date" id="tanggalJurnal">
+    <label for="tanggalMulai">Tanggal mulai</label>
+    <input type="date" id="tanggalMulai">
+
+    <label for="tanggalAkhir">Tanggal akhir</label>
+    <input type="date" id="tanggalAkhir">
+
+    <div class="toolbar" style="margin-top: 14px;">
+        <button
+            type="button"
+            onclick="terapkanFilterTanggal()">
+            Terapkan filter
+        </button>
+
+        <button
+            type="button"
+            class="light"
+            onclick="resetTanggal()">
+            Reset tanggal
+        </button>
+    </div>
+
+    <div id="infoRentangTanggal" class="message"></div>
 </div>
-
-
-
 
 <!-- PEMBUNGKUS DAFTAR + EDITOR -->
 <div class="workspace">
@@ -898,6 +971,7 @@ button.light:hover {
         id="daftarCatatan"
         class="note-list"
     ></div>
+
 
     <!-- EDITOR -->
     <div
@@ -933,6 +1007,22 @@ button.light:hover {
                 placeholder="Tuliskan apa yang sedang kamu pikirkan..."
             ></textarea>
 
+            <label for="kategoriCatatan">
+    Kategori catatan
+</label>
+
+<div class="category-editor">
+    <select id="kategoriCatatan">
+        <option value="">Tanpa kategori</option>
+    </select>
+
+    <button
+        type="button"
+        class="light"
+        onclick="kelolaKategori()">
+        + Kelola kategori
+    </button>
+</div>
 
             <button onclick="simpanCatatan()">
                 Simpan catatan
@@ -1270,28 +1360,32 @@ let hasil = daftar.filter(note => {
     const cocokPencarian =
         title.includes(keyword) || content.includes(keyword);
 
-    const cocokFavorit =
-        filterAktif !== "favorit" || note.is_favorite === true;
 
-    const tanggalNote = note.updated_at
-        ? new Date(note.updated_at)
-        : null;
+    
+const tanggalNote = note.updated_at
+    ? new Date(note.updated_at)
+    : null;
 
-    const cocokTanggal =
-        filterAktif !== "kalender" ||
-        (
-            tanggalJurnal.value &&
-            tanggalNote &&
-            !Number.isNaN(tanggalNote.getTime()) &&
-            tanggalNote.getFullYear() ===
-                Number(tanggalJurnal.value.slice(0, 4)) &&
-            tanggalNote.getMonth() ===
-                Number(tanggalJurnal.value.slice(5, 7)) - 1 &&
-            tanggalNote.getDate() ===
-                Number(tanggalJurnal.value.slice(8, 10))
-        );
+const tanggalLokal =
+    tanggalNote && !Number.isNaN(tanggalNote.getTime())
+        ? [
+            tanggalNote.getFullYear(),
+            String(tanggalNote.getMonth() + 1).padStart(2, "0"),
+            String(tanggalNote.getDate()).padStart(2, "0")
+          ].join("-")
+        : "";
 
-    return cocokPencarian && cocokFavorit && cocokTanggal;
+const cocokTanggal =
+    filterAktif !== "kalender" ||
+    (
+        tanggalLokal !== "" &&
+        (!tanggalMulai.value ||
+            tanggalLokal >= tanggalMulai.value) &&
+        (!tanggalAkhir.value ||
+            tanggalLokal <= tanggalAkhir.value)
+    );
+
+    return cocokPencarian && cocokTanggal;
 });
 
     // Urutkan catatan terbaru
@@ -1311,8 +1405,9 @@ let hasil = daftar.filter(note => {
     }
 
     daftarCatatan.innerHTML = hasil.map(note => {
-        const titleText = note.title || "Tanpa judul";
-        const contentText = note.content || "";
+      const titleText = note.title || "Tanpa judul";
+      const contentText = note.content || "";
+      const categoryText = note.category || "";
 
         const titleClass = arabicRegex.test(titleText)
             ? "note-title arabic"
@@ -1322,30 +1417,28 @@ let hasil = daftar.filter(note => {
             ? "note-preview arabic"
             : "note-preview";
 
-        return `
-            <article class="note-card">
-                <div class="${titleClass}">
-                    ${escapeHTML(titleText)}
-                </div>
+        
+return `
+    <article class="note-card">
+        <div class="${titleClass}">
+            ${escapeHTML(titleText)}
+        </div>
 
-                <div class="note-date">
-                    ${formatTanggal(note.updated_at)}
-                </div>
+        <div class="note-date">
+            ${formatTanggal(note.updated_at)}
+        </div>
 
-                <div class="${previewClass}">
-                    ${escapeHTML(contentText) || "Catatan kosong."}
-                </div>
+        <div class="note-category">
+            ${escapeHTML(note.category || "Tanpa kategori")}
+        </div>
+
+        <div class="${previewClass}">
+            ${escapeHTML(contentText) || "Catatan kosong."}
+        </div>
+
 
                 <div class="note-actions">
 
-    <button
-        class="small light favorite-button"
-        onclick="toggleFavorit('${escapeHTML(note.id)}')"
-        title="Tandai favorit"
-        aria-label="Tandai favorit"
-    >
-        ${note.is_favorite ? "★" : "☆"}
-    </button>
 
     <button class="small"
         onclick="editCatatan('${escapeHTML(note.id)}')">
@@ -1408,6 +1501,9 @@ function editCatatan(id) {
     isiCatatan.value =
         note.content || "";
 
+    kategoriCatatan.value = 
+        note.category || "";
+
     // Deteksi bahasa setelah catatan dimuat
     deteksiBahasaCatatan();
 
@@ -1430,11 +1526,16 @@ function editCatatan(id) {
 
 async function simpanCatatan() {
 
-    const title =
-        judul.value.trim();
+    
+const title =
+    judul.value.trim();
 
-    const content =
-        isiCatatan.value;
+const content =
+    isiCatatan.value;
+
+const category =
+    kategoriCatatan.value || null;
+
 
 
     if (!title) {
@@ -1465,15 +1566,18 @@ async function simpanCatatan() {
 
         if (sedangEdit) {
 
-            await apiRequest(
-                "update",
-                "PUT",
-                {
-                    id: sedangEdit,
-                    title: title,
-                    content: content
-                }
-            );
+            
+await apiRequest(
+    "update",
+    "PUT",
+    {
+        id: sedangEdit,
+        title: title,
+        content: content,
+        category: category
+    }
+);
+
 
 
             setStatus(
@@ -1482,14 +1586,17 @@ async function simpanCatatan() {
 
         } else {
 
-            await apiRequest(
-                "create",
-                "POST",
-                {
-                    title: title,
-                    content: content
-                }
-            );
+            
+await apiRequest(
+    "create",
+    "POST",
+    {
+        title: title,
+        content: content,
+        category: category
+    }
+);
+
 
 
             setStatus(
@@ -1842,17 +1949,11 @@ let filterAktif = "semua";
 const panelKalender =
     document.getElementById("panelKalender");
 
-const tanggalJurnal =
-    document.getElementById("tanggalJurnal");
-
 function ubahFilter(filter) {
     filterAktif = filter;
 
     document.getElementById("btnSemua")
         .classList.toggle("active", filter === "semua");
-
-    document.getElementById("btnFavorit")
-        .classList.toggle("active", filter === "favorit");
 
     document.getElementById("btnKalender")
         .classList.toggle("active", filter === "kalender");
@@ -1865,43 +1966,123 @@ function ubahFilter(filter) {
     renderCatatan();
 }
 
-tanggalJurnal.addEventListener("change", renderCatatan);
 
+const tanggalMulai = document.getElementById("tanggalMulai");
+const tanggalAkhir = document.getElementById("tanggalAkhir");
+const infoRentangTanggal =
+    document.getElementById("infoRentangTanggal");
 
-async function toggleFavorit(id) {
-    const note = daftar.find(item => item.id === id);
-    if (!note) return;
-
-    const nilaiBaru = note.is_favorite !== true;
-
-    try {
-        await apiRequest(
-            "update",
-            "PUT",
-            {
-                id: id,
-                title: note.title || "",
-                content: note.content || "",
-                is_favorite: nilaiBaru
-            }
-        );
-
-        note.is_favorite = nilaiBaru;
-        renderCatatan();
-
-        setStatus(
-            nilaiBaru
-                ? "Ditambahkan ke favorit."
-                : "Dihapus dari favorit."
-        );
-    } catch (error) {
-        setStatus(
-            "Favorit gagal disimpan. Pastikan API mendukung is_favorite.",
-            true
-        );
+function terapkanFilterTanggal() {
+    if (
+        tanggalMulai.value &&
+        tanggalAkhir.value &&
+        tanggalMulai.value > tanggalAkhir.value
+    ) {
+        infoRentangTanggal.textContent =
+            "Tanggal mulai tidak boleh melebihi tanggal akhir.";
+        return;
     }
+
+    infoRentangTanggal.textContent = "";
+    renderCatatan();
 }
 
+function resetTanggal() {
+    tanggalMulai.value = "";
+    tanggalAkhir.value = "";
+    infoRentangTanggal.textContent = "";
+    renderCatatan();
+}
+
+tanggalMulai.addEventListener("change", terapkanFilterTanggal);
+tanggalAkhir.addEventListener("change", terapkanFilterTanggal);
+
+
+/* =========================================================
+   KATEGORI CATATAN
+   ========================================================= */
+
+const kategoriCatatan =
+    document.getElementById("kategoriCatatan");
+
+function muatPilihanKategori() {
+    const kategoriTersimpan = [
+        "Umum",
+        "Pekerjaan",
+        "Pribadi",
+        "Ide",
+        "Syair",
+        "Refleksi",
+        "Belajar"
+    ];
+
+    kategoriCatatan.innerHTML =
+        '<option value="">Tanpa kategori</option>';
+
+    kategoriTersimpan.forEach(function (nama) {
+        const option = document.createElement("option");
+        option.value = nama;
+        option.textContent = nama;
+        kategoriCatatan.appendChild(option);
+    });
+}
+
+function kelolaKategori() {
+    const namaBaru = prompt(
+        "Masukkan nama kategori baru:"
+    );
+
+    if (namaBaru === null) return;
+
+    const nama = namaBaru.trim();
+
+    if (!nama) {
+        alert("Nama kategori tidak boleh kosong.");
+        return;
+    }
+
+    const sudahAda = Array.from(
+        kategoriCatatan.options
+    ).some(function (option) {
+        return option.value.toLowerCase() ===
+            nama.toLowerCase();
+    });
+
+    if (sudahAda) {
+        alert("Kategori sudah tersedia.");
+        return;
+    }
+
+    const option = document.createElement("option");
+    option.value = nama;
+    option.textContent = nama;
+
+    kategoriCatatan.appendChild(option);
+    kategoriCatatan.value = nama;
+
+    alert(
+        'Kategori "' + nama +
+        '" ditambahkan untuk sesi halaman ini.'
+    );
+}
+
+muatPilihanKategori();
+
+function catatanBaru() {
+    sedangEdit = null;
+    judul.value = "";
+    isiCatatan.value = "";
+    kategoriCatatan.value = "";
+
+    editor.classList.remove("hidden");
+
+    judul.focus();
+
+    editor.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
 </script>
 
 </body>
